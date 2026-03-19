@@ -170,7 +170,7 @@ impl<'a> Diff<'a> {
                 .find(|line| line.old_index.is_some())
             {
                 assert!(line.index < index);
-                IndexPair::new(0, line.old_index.unwrap())
+                IndexPair::new(index - line.index, line.old_index.unwrap())
             } else {
                 IndexPair::new(0, 0)
             }
@@ -195,7 +195,7 @@ impl<'a> Diff<'a> {
                 .find(|line| line.new_index.is_some())
             {
                 assert!(line.index < index);
-                IndexPair::new(0, line.new_index.unwrap())
+                IndexPair::new(index - line.index, line.new_index.unwrap())
             } else {
                 IndexPair::new(0, 0)
             }

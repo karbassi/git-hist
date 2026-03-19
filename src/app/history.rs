@@ -1,5 +1,6 @@
 use crate::app::commit::Commit;
 use crate::app::diff::Diff;
+use anyhow::{ensure, Result};
 
 pub struct TurningPoint<'a> {
     commit: Commit<'a>,
@@ -42,7 +43,7 @@ pub struct History<'a> {
 }
 
 impl<'a> History<'a> {
-    pub fn new<I: Iterator<Item = TurningPoint<'a>>>(points: I) -> Self {
+    pub fn new<I: Iterator<Item = TurningPoint<'a>>>(points: I) -> Result<Self> {
         let mut points = points
             .enumerate()
             .map(|(i, mut p)| {
@@ -50,14 +51,14 @@ impl<'a> History<'a> {
                 p
             })
             .collect::<Vec<_>>();
-        assert!(!points.is_empty());
+        ensure!(!points.is_empty(), "No changes found for this file in the commit history");
 
         let len = points.len();
         for point in points.iter_mut() {
             point.is_latest = Some(point.index_of_history.unwrap() == 0);
             point.is_earliest = Some(point.index_of_history.unwrap() + 1 == len);
         }
-        History { points }
+        Ok(History { points })
     }
 
     pub fn latest(&self) -> Option<&TurningPoint> {

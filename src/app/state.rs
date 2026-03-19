@@ -144,14 +144,12 @@ impl<'a> State<'a> {
     }
 
     pub fn scroll_page_up(self) -> Self {
-        let diff_height = Dashboard::diff_height(self.terminal_height);
+        let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
+        let min_index = self.point.diff().allowed_min_index(&self);
 
-        let line_index = cmp::min(
-            self.line_index,
-            cmp::max(
-                self.line_index.saturating_sub(diff_height),
-                self.point.diff().allowed_min_index(&self),
-            ),
+        let line_index = cmp::max(
+            min_index,
+            self.line_index.saturating_sub(diff_height),
         );
 
         State::new(
@@ -164,14 +162,12 @@ impl<'a> State<'a> {
     }
 
     pub fn scroll_page_down(self) -> Self {
-        let diff_height = Dashboard::diff_height(self.terminal_height);
+        let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
+        let max_index = self.point.diff().allowed_max_index(&self);
 
-        let line_index = cmp::max(
-            self.line_index,
-            cmp::min(
-                self.line_index + diff_height,
-                self.point.diff().allowed_max_index(&self),
-            ),
+        let line_index = cmp::min(
+            self.line_index + diff_height,
+            max_index,
         );
 
         State::new(
@@ -184,7 +180,7 @@ impl<'a> State<'a> {
     }
 
     pub fn scroll_to_top(self) -> Self {
-        let line_index = cmp::min(self.line_index, self.point.diff().allowed_min_index(&self));
+        let line_index = self.point.diff().allowed_min_index(&self);
 
         State::new(
             self.point,
@@ -196,7 +192,7 @@ impl<'a> State<'a> {
     }
 
     pub fn scroll_to_bottom(self) -> Self {
-        let line_index = cmp::max(self.line_index, self.point.diff().allowed_max_index(&self));
+        let line_index = self.point.diff().allowed_max_index(&self);
 
         State::new(
             self.point,
@@ -212,9 +208,18 @@ impl<'a> State<'a> {
     }
 
     pub fn update_terminal_height(self, terminal_height: usize) -> Self {
-        State::new(
+        let tmp = State::new(
             self.point,
             self.line_index,
+            self.max_line_number_len,
+            terminal_height,
+            self.args,
+        );
+        let max_index = self.point.diff().allowed_max_index(&tmp);
+        let line_index = cmp::min(self.line_index, max_index);
+        State::new(
+            self.point,
+            line_index,
             self.max_line_number_len,
             terminal_height,
             self.args,

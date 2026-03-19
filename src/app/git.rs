@@ -9,9 +9,18 @@ use std::path;
 
 pub fn get_repository() -> Result<Repository> {
     let repo = Repository::discover(env::current_dir()?)
-        .context("Faild to open a git repository for the current directory")?;
+        .context("Failed to open a git repository for the current directory")?;
     if repo.is_bare() {
-        return Err(anyhow!("git-hist dose not support a bare repository"));
+        return Err(anyhow!("git-hist does not support a bare repository"));
+    }
+    Ok(repo)
+}
+
+pub fn get_repository_at(path: &path::Path) -> Result<Repository> {
+    let repo =
+        Repository::discover(path).context("Failed to open a git repository for the given path")?;
+    if repo.is_bare() {
+        return Err(anyhow!("git-hist does not support a bare repository"));
     }
     Ok(repo)
 }
@@ -21,8 +30,16 @@ pub fn get_history<'a, P: AsRef<path::Path>>(
     repo: &'a Repository,
     args: &'a Args,
 ) -> Result<History<'a>> {
-    let file_path_from_repository = env::current_dir()
-        .unwrap()
+    get_history_with_workdir(file_path, repo, args, &env::current_dir().unwrap())
+}
+
+pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
+    file_path: P,
+    repo: &'a Repository,
+    args: &'a Args,
+    workdir: &path::Path,
+) -> Result<History<'a>> {
+    let file_path_from_repository = workdir
         .join(&file_path)
         .strip_prefix(repo.path().parent().unwrap())
         .unwrap()
@@ -95,7 +112,7 @@ pub fn get_history<'a, P: AsRef<path::Path>>(
             let diff = Diff::new(&delta, repo, args);
             TurningPoint::new(commit, diff)
         })
-    }));
+    }))?;
 
     Ok(history)
 }

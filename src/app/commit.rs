@@ -100,6 +100,7 @@ impl<'a> Commit<'a> {
                     .filter(|oid| *oid == self.oid)
                     .is_some()
             });
+        let references = references.filter(|r| r.is_branch() || r.is_remote() || r.is_tag());
         let reference_groups: HashMap<ReferenceType, Vec<_>> =
             references.into_group_map_by(|r| match r {
                 _ if r.is_branch() => ReferenceType::LocalBranch,

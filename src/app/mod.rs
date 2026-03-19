@@ -1,14 +1,14 @@
 use anyhow::Result;
 use std::panic;
 
-mod commit;
+pub mod commit;
 mod controller;
-mod dashboard;
-mod diff;
-mod git;
-mod history;
-mod state;
-mod terminal;
+pub mod dashboard;
+pub mod diff;
+pub mod git;
+pub mod history;
+pub mod state;
+pub mod terminal;
 
 use crate::args::Args;
 use dashboard::Dashboard;
