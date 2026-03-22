@@ -43,7 +43,7 @@ impl<'a> State<'a> {
         )
     }
 
-    pub fn point(&self) -> &TurningPoint {
+    pub fn point(&self) -> &TurningPoint<'_> {
         self.point
     }
 
@@ -147,10 +147,7 @@ impl<'a> State<'a> {
         let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
         let min_index = self.point.diff().allowed_min_index(&self);
 
-        let line_index = cmp::max(
-            min_index,
-            self.line_index.saturating_sub(diff_height),
-        );
+        let line_index = cmp::max(min_index, self.line_index.saturating_sub(diff_height));
 
         State::new(
             self.point,
@@ -165,10 +162,7 @@ impl<'a> State<'a> {
         let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
         let max_index = self.point.diff().allowed_max_index(&self);
 
-        let line_index = cmp::min(
-            self.line_index + diff_height,
-            max_index,
-        );
+        let line_index = cmp::min(self.line_index + diff_height, max_index);
 
         State::new(
             self.point,

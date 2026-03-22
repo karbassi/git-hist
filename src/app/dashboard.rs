@@ -3,7 +3,6 @@ use crate::app::terminal::Terminal;
 use crate::args::UserType;
 use anyhow::Result;
 use once_cell::sync::Lazy;
-use std::iter;
 use tui::{layout, style, text, widgets};
 
 const COMMIT_INFO_INNER_HEIGHT: u16 = 2;
@@ -282,11 +281,7 @@ impl<'a> Dashboard<'a> {
 
             let diff_height = Self::diff_height(state.terminal_height());
             let offset = diff_height.saturating_sub(BINARY_ALERT_TEXT.len()) / 2;
-            alert_text.append(
-                &mut iter::repeat(text::Spans::from(vec![]))
-                    .take(offset)
-                    .collect(),
-            );
+            alert_text.append(&mut vec![text::Spans::from(vec![]); offset]);
             alert_text.append(&mut BINARY_ALERT_TEXT.clone());
 
             widgets::Paragraph::new(alert_text).alignment(layout::Alignment::Center)

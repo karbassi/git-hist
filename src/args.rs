@@ -55,7 +55,7 @@ impl Args {
                 Arg::new("name-of")
                     .long("name-of")
                     .value_name("user")
-                    .possible_values(&["author", "committer"])
+                    .possible_values(["author", "committer"])
                     .default_value("author")
                     .help("Use whether authors or committers for names"),
             )
@@ -63,7 +63,7 @@ impl Args {
                 Arg::new("date-of")
                     .long("date-of")
                     .value_name("user")
-                    .possible_values(&["author", "committer"])
+                    .possible_values(["author", "committer"])
                     .default_value("author")
                     .help("Use whether authors or committers for dates"),
             )

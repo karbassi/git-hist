@@ -29,11 +29,11 @@ impl<'a> TurningPoint<'a> {
         self.is_earliest.unwrap()
     }
 
-    pub fn commit(&self) -> &Commit {
+    pub fn commit(&self) -> &Commit<'_> {
         &self.commit
     }
 
-    pub fn diff(&self) -> &Diff {
+    pub fn diff(&self) -> &Diff<'_> {
         &self.diff
     }
 }
@@ -51,7 +51,10 @@ impl<'a> History<'a> {
                 p
             })
             .collect::<Vec<_>>();
-        ensure!(!points.is_empty(), "No changes found for this file in the commit history");
+        ensure!(
+            !points.is_empty(),
+            "No changes found for this file in the commit history"
+        );
 
         let len = points.len();
         for point in points.iter_mut() {
@@ -61,18 +64,18 @@ impl<'a> History<'a> {
         Ok(History { points })
     }
 
-    pub fn latest(&self) -> Option<&TurningPoint> {
+    pub fn latest(&self) -> Option<&TurningPoint<'_>> {
         self.points.first()
     }
 
-    pub fn backward(&self, point: &TurningPoint) -> Option<&TurningPoint> {
+    pub fn backward(&self, point: &TurningPoint) -> Option<&TurningPoint<'_>> {
         point
             .index_of_history
             .and_then(|i| i.checked_add(1))
             .and_then(|i| self.points.get(i))
     }
 
-    pub fn forward(&self, point: &TurningPoint) -> Option<&TurningPoint> {
+    pub fn forward(&self, point: &TurningPoint) -> Option<&TurningPoint<'_>> {
         point
             .index_of_history
             .and_then(|i| i.checked_sub(1))

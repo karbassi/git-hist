@@ -41,9 +41,8 @@ pub fn run(args: Args) -> Result<()> {
 
         Ok(())
     })()
-    .map_err(|e| {
+    .inspect_err(|_| {
         let _ = exit();
-        e
     })?;
 
     exit()

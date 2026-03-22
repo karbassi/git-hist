@@ -7,8 +7,23 @@ use std::path::Path;
 
 const GIT_HIST_REPO: &str = env!("CARGO_MANIFEST_DIR");
 
+const ASSISTANT_REPO_PATH: &str = "/Users/ali/Projects/personal/assistant";
+
 fn assistant_repo_path() -> &'static Path {
-    Path::new("/Users/ali/Projects/personal/assistant")
+    Path::new(ASSISTANT_REPO_PATH)
+}
+
+fn has_assistant_repo() -> bool {
+    Path::new(ASSISTANT_REPO_PATH).join(".git").exists()
+}
+
+macro_rules! require_assistant_repo {
+    () => {
+        if !has_assistant_repo() {
+            eprintln!("SKIP: assistant repo not available");
+            return;
+        }
+    };
 }
 
 fn default_args(file_path: &str) -> Args {
@@ -65,11 +80,7 @@ fn bug_error_message_typo_dose() {
 
 fn tempdir() -> String {
     use std::process::Command;
-    let out = Command::new("mktemp")
-        .args(["-d"])
-        .output()
-        .unwrap()
-        .stdout;
+    let out = Command::new("mktemp").args(["-d"]).output().unwrap().stdout;
     String::from_utf8(out).unwrap().trim().to_string()
 }
 
@@ -99,7 +110,10 @@ fn bug_state_line_index_exceeds_max_after_terminal_shrink() {
     let state = State::new(point, 0, point.diff().max_line_number_len(), 6, &args);
     let state = state.scroll_to_bottom();
     let bottom_index = state.line_index();
-    assert!(bottom_index > 0, "Should be scrolled down with tiny terminal");
+    assert!(
+        bottom_index > 0,
+        "Should be scrolled down with tiny terminal"
+    );
 
     // Now resize to a very tall terminal — allowed_max_index will shrink
     let state = state.update_terminal_height(1000);
@@ -281,7 +295,10 @@ fn test_history_new_returns_error_on_empty_iterator() {
 
     let empty: Vec<git_hist::app::history::TurningPoint> = vec![];
     let result = History::new(empty.into_iter());
-    assert!(result.is_err(), "History::new with empty iterator should return Err");
+    assert!(
+        result.is_err(),
+        "History::new with empty iterator should return Err"
+    );
 }
 
 // ============================================================
@@ -351,6 +368,7 @@ fn test_get_repository_at_git_hist() {
 
 #[test]
 fn test_get_repository_at_assistant() {
+    require_assistant_repo!();
     let repo = git::get_repository_at(assistant_repo_path());
     assert!(repo.is_ok(), "Should open assistant repo with submodules");
     assert!(!repo.unwrap().is_bare());
@@ -408,6 +426,7 @@ fn test_get_history_directory_path_fails() {
 
 #[test]
 fn test_get_history_assistant_repo_with_submodules() {
+    require_assistant_repo!();
     let repo_path = assistant_repo_path();
     let repo = Repository::open(repo_path).unwrap();
     let args = default_args("CHANGELOG.md");
@@ -421,6 +440,7 @@ fn test_get_history_assistant_repo_with_submodules() {
 
 #[test]
 fn test_get_history_assistant_readme() {
+    require_assistant_repo!();
     let repo_path = assistant_repo_path();
     let repo = Repository::open(repo_path).unwrap();
     let args = default_args("README.md");
@@ -436,6 +456,7 @@ fn test_get_history_assistant_readme() {
 
 #[test]
 fn test_submodule_path_is_not_a_blob() {
+    require_assistant_repo!();
     let repo_path = assistant_repo_path();
     let repo = Repository::open(repo_path).unwrap();
     let args = default_args("org");
@@ -584,19 +605,28 @@ fn test_commit_references_dont_panic() {
 #[test]
 fn test_local_branch_display_with_head() {
     use git_hist::app::commit::LocalBranch;
-    assert_eq!(format!("{}", LocalBranch::new("main", true)), "HEAD -> main");
+    assert_eq!(
+        format!("{}", LocalBranch::new("main", true)),
+        "HEAD -> main"
+    );
 }
 
 #[test]
 fn test_local_branch_display_without_head() {
     use git_hist::app::commit::LocalBranch;
-    assert_eq!(format!("{}", LocalBranch::new("feature-x", false)), "feature-x");
+    assert_eq!(
+        format!("{}", LocalBranch::new("feature-x", false)),
+        "feature-x"
+    );
 }
 
 #[test]
 fn test_remote_branch_display() {
     use git_hist::app::commit::RemoteBranch;
-    assert_eq!(format!("{}", RemoteBranch::new("origin/main")), "origin/main");
+    assert_eq!(
+        format!("{}", RemoteBranch::new("origin/main")),
+        "origin/main"
+    );
 }
 
 #[test]
@@ -731,7 +761,10 @@ fn test_nearest_new_index_pair_from_zero() {
             .unwrap();
     let pair = history.latest().unwrap().diff().nearest_new_index_pair(0);
     // From index 0, the first line with new_index should be at or near the top
-    assert!(pair.relative_index() < 5, "First new_index should be near the top");
+    assert!(
+        pair.relative_index() < 5,
+        "First new_index should be near the top"
+    );
 }
 
 // ============================================================
@@ -934,6 +967,7 @@ fn test_custom_tab_size() {
 
 #[test]
 fn test_full_workflow_assistant_repo() {
+    require_assistant_repo!();
     let repo_path = assistant_repo_path();
     let repo = Repository::open(repo_path).unwrap();
     let args = default_args("README.md");
@@ -959,6 +993,7 @@ fn test_full_workflow_assistant_repo() {
 
 #[test]
 fn test_state_navigation_across_commits_assistant() {
+    require_assistant_repo!();
     let repo_path = assistant_repo_path();
     let repo = Repository::open(repo_path).unwrap();
     let args = default_args("README.md");
@@ -966,7 +1001,10 @@ fn test_state_navigation_across_commits_assistant() {
     let point = history.latest().unwrap();
     let state = State::new(point, 0, point.diff().max_line_number_len(), 24, &args);
     // Scroll down then switch commits — should not panic
-    let state = state.scroll_line_down().scroll_line_down().scroll_line_down();
+    let state = state
+        .scroll_line_down()
+        .scroll_line_down()
+        .scroll_line_down();
     let state = state.backward_commit(&history);
     let _ = state.line_index();
     let _ = state.point().commit().summary();
@@ -989,7 +1027,10 @@ fn bug_tiny_terminal_page_scroll_is_noop() {
 
     // Terminal height = 4, so diff_height = 4 - 4 = 0
     let diff_height = Dashboard::diff_height(4);
-    assert_eq!(diff_height, 0, "diff_height should be 0 for terminal height 4");
+    assert_eq!(
+        diff_height, 0,
+        "diff_height should be 0 for terminal height 4"
+    );
 
     let point = history.latest().unwrap();
     let state = State::new(point, 0, point.diff().max_line_number_len(), 4, &args);
@@ -1017,6 +1058,7 @@ fn bug_tiny_terminal_page_scroll_is_noop() {
 
 #[test]
 fn test_deleted_diff_should_reference_old_path() {
+    require_assistant_repo!();
     // Walk through assistant repo history looking for a deleted file
     let repo_path = assistant_repo_path();
     let repo = Repository::open(repo_path).unwrap();
