@@ -167,7 +167,7 @@ impl<'a> Dashboard<'a> {
             }
         );
 
-        let date = (match state.args().user_for_name {
+        let date = (match state.args().user_for_date {
             UserType::Author => state.point().commit().author_date(),
             UserType::Committer => state.point().commit().committer_date(),
         })
