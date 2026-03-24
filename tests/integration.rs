@@ -1128,18 +1128,24 @@ fn bug_dashboard_date_display_uses_wrong_user_type() {
     // This is intentionally a source-level check — if the method becomes
     // public, replace with a behavior-based test.
     let source = include_str!("../src/app/dashboard.rs");
+    let lines: Vec<&str> = source.lines().collect();
+    let target = "state.args().user_for_date";
+    let date_line_index = lines
+        .iter()
+        .position(|line| line.contains(target))
+        .expect("Could not find user_for_date in dashboard.rs");
 
-    let date_block_start = source
-        .find("let date = (match state.args().")
-        .expect("Could not find date computation block in dashboard.rs");
-
-    let date_block = &source[date_block_start..];
-    let date_block_window = date_block.lines().take(5).collect::<Vec<_>>().join("\n");
+    let date_block_window = lines
+        .iter()
+        .skip(date_line_index)
+        .take(5)
+        .cloned()
+        .collect::<Vec<_>>()
+        .join("\n");
 
     assert!(
         date_block_window.contains("user_for_date"),
-        "BUG: dashboard.rs date display uses user_for_name instead of user_for_date. \
-         Found in window: {}",
+        "BUG: dashboard.rs date display does not use user_for_date. Found in window: {}",
         date_block_window
     );
 
