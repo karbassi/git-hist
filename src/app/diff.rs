@@ -102,7 +102,7 @@ impl<'a> Diff<'a> {
         match self.status {
             Delta::Modified => format!("* Modified: {}", self.new_path.as_deref().unwrap()),
             Delta::Added => format!("* Added: {}", self.new_path.as_deref().unwrap()),
-            Delta::Deleted => format!("* Deleted: {}", self.new_path.as_deref().unwrap()),
+            Delta::Deleted => format!("* Deleted: {}", self.old_path.as_deref().unwrap()),
             Delta::Renamed => format!(
                 "* Renamed: {} -> {}",
                 self.old_path.as_deref().unwrap(),
@@ -127,7 +127,7 @@ impl<'a> Diff<'a> {
             .len()
     }
 
-    pub fn allowed_min_index(&self, _state: &State) -> usize {
+    pub fn allowed_min_index(&self) -> usize {
         0
     }
 
@@ -146,8 +146,8 @@ impl<'a> Diff<'a> {
         }
     }
 
-    pub fn can_move_up(&self, index: usize, state: &State) -> bool {
-        index > self.allowed_min_index(state)
+    pub fn can_move_up(&self, index: usize) -> bool {
+        index > self.allowed_min_index()
     }
 
     pub fn can_move_down(&self, index: usize, state: &State) -> bool {

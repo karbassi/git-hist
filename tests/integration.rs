@@ -1079,39 +1079,68 @@ fn bug_tiny_terminal_page_scroll_is_noop() {
 }
 
 // ============================================================
-// BUG: Deleted file diff status uses new_path (PR #13 fixed
-// the Delta status, but status() still unwraps new_path for
-// Delta::Deleted — a deleted file's meaningful path is old_path)
+// Regression: Deleted file diff status must use old_path
+// diff.rs Delta::Deleted arm should display old_path (the path
+// that existed before deletion), not new_path.
 // ============================================================
 
 #[test]
-fn test_deleted_diff_should_reference_old_path() {
-    require_assistant_repo!();
-    // Walk through assistant repo history looking for a deleted file
-    let repo_path = assistant_repo_path();
-    let repo = Repository::open(repo_path).unwrap();
+fn test_deleted_diff_status_uses_old_path() {
+    use git2::Signature;
+    use git_hist::app::diff::Diff;
+    use std::fs;
 
-    // Try several files that might have been deleted at some point
-    // Even if we can't find one, the test documents the bug:
-    // diff.rs line 105: Delta::Deleted uses self.new_path but should use self.old_path
-    // For a deleted file, new_path may be set (git2 copies it) but semantically old_path
-    // is the correct path to display.
+    let tmp = tempdir();
+    let repo = Repository::init(&tmp).unwrap();
+    let sig = Signature::now("Test", "test@test.com").unwrap();
 
-    // This test verifies the code path doesn't panic for any status type
-    for file in &["README.md", "CHANGELOG.md"] {
-        let args = default_args(file);
-        if let Ok(history) = git::get_history_with_workdir(file, &repo, &args, repo_path) {
-            let mut point = history.latest().unwrap();
-            while let Some(prev) = history.backward(point) {
-                point = prev;
-                let status = point.diff().status();
-                // Verify status always has the file path
-                assert!(
-                    status.contains('/') || status.contains('.') || status.contains(file),
-                    "Status should contain a file reference: {}",
-                    status
-                );
-            }
-        }
-    }
+    // First commit: add a file
+    let file_path = format!("{}/deleted_file.txt", tmp);
+    fs::write(&file_path, "hello\n").unwrap();
+    let mut index = repo.index().unwrap();
+    index.add_path(Path::new("deleted_file.txt")).unwrap();
+    index.write().unwrap();
+    let tree_oid = index.write_tree().unwrap();
+    let tree = repo.find_tree(tree_oid).unwrap();
+    let commit1 = repo
+        .commit(Some("HEAD"), &sig, &sig, "add file", &tree, &[])
+        .unwrap();
+    let commit1 = repo.find_commit(commit1).unwrap();
+
+    // Second commit: delete the file
+    fs::remove_file(&file_path).unwrap();
+    let mut index = repo.index().unwrap();
+    index.remove_path(Path::new("deleted_file.txt")).unwrap();
+    index.write().unwrap();
+    let tree_oid = index.write_tree().unwrap();
+    let tree = repo.find_tree(tree_oid).unwrap();
+    repo.commit(Some("HEAD"), &sig, &sig, "delete file", &tree, &[&commit1])
+        .unwrap();
+
+    // Get the diff between the two trees (commit1 -> commit2)
+    let old_tree = commit1.tree().unwrap();
+    let args = default_args("deleted_file.txt");
+    let git_diff = repo
+        .diff_tree_to_tree(Some(&old_tree), Some(&tree), None)
+        .unwrap();
+
+    // Find the delta for our deleted file
+    let delta = git_diff
+        .deltas()
+        .find(|d| d.status() == git2::Delta::Deleted)
+        .expect("Should find a Deleted delta");
+
+    let diff = Diff::new(&delta, &repo, &args);
+    let status = diff.status();
+
+    assert!(
+        status.contains("deleted_file.txt"),
+        "Deleted file status should reference the old path. Got: {}",
+        status
+    );
+    assert!(
+        status.starts_with("* Deleted:"),
+        "Status should be a Deleted entry. Got: {}",
+        status
+    );
 }
