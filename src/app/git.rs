@@ -34,6 +34,9 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     args: &'a Args,
     workdir: &path::Path,
 ) -> Result<History<'a>> {
+    if repo.is_bare() {
+        return Err(anyhow!("git-hist does not support a bare repository"));
+    }
     let repo_root = repo
         .workdir()
         .context("Failed to determine repository workdir")?;
@@ -56,15 +59,23 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     revwalk.simplify_first_parent()?;
 
     let mut commits = Vec::new();
+    let mut skipped = false;
     for oid_result in revwalk {
         let oid = oid_result.context("Failed to traverse commit history")?;
-        if let Ok(commit) = repo.find_commit(oid) {
-            commits.push(commit);
+        match repo.find_commit(oid) {
+            Ok(commit) => commits.push(commit),
+            Err(_) => skipped = true,
         }
     }
     let head_tree = commits
         .first()
-        .context("Failed to get any commit")?
+        .ok_or_else(|| {
+            if skipped {
+                anyhow!("Failed to resolve any commits; the repository may be shallow or corrupt")
+            } else {
+                anyhow!("Failed to get any commit")
+            }
+        })?
         .tree()
         .unwrap();
     let latest_file_oid = head_tree

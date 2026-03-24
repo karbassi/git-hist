@@ -1129,11 +1129,10 @@ fn test_get_history_path_outside_repo_returns_error() {
     let repo_path = Path::new(GIT_HIST_REPO);
     let repo = Repository::open(repo_path).unwrap();
     let args = default_args("Cargo.toml");
-    let outside_dir = std::env::temp_dir();
-    assert!(
-        !outside_dir.starts_with(repo_path),
-        "temp_dir is inside repo, test invalid"
-    );
+    let repo_parent = repo_path
+        .parent()
+        .expect("repo should have a parent directory");
+    let outside_dir = repo_parent.join("git_hist_outside_repo_test");
     let result = git::get_history_with_workdir("Cargo.toml", &repo, &args, &outside_dir);
     assert!(
         result.is_err(),
