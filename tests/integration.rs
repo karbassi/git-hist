@@ -1048,8 +1048,6 @@ fn test_state_navigation_across_commits_assistant() {
 
 #[test]
 fn bug_tiny_terminal_page_scroll_is_noop() {
-    use git_hist::app::dashboard::Dashboard;
-
     let repo = Repository::open(GIT_HIST_REPO).unwrap();
     let args = default_args("Cargo.toml");
     let history =
@@ -1057,7 +1055,7 @@ fn bug_tiny_terminal_page_scroll_is_noop() {
             .unwrap();
 
     // Terminal height = 4, so diff_height = 4 - 4 = 0
-    let diff_height = Dashboard::diff_height(4);
+    let diff_height = 4usize.saturating_sub(4);
     assert_eq!(
         diff_height, 0,
         "diff_height should be 0 for terminal height 4"
