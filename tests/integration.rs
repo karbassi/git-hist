@@ -1116,11 +1116,11 @@ fn test_deleted_diff_should_reference_old_path() {
     }
 }
 
-/// Regression test: TurningPoint accessed through History must have is_latest/is_earliest
-/// properly initialized. Before the refactor, TurningPoint::new was pub and created objects
-/// with sentinel defaults (index 0, is_latest false, is_earliest false) that could mislead
-/// callers. Now TurningPoint::new is pub(crate), so external code can only obtain a
-/// TurningPoint through History, which always initializes these fields correctly.
+// Regression: TurningPoint fields were previously Option types initialized
+// to None by pub fn new(), with is_latest()/is_earliest() calling .unwrap().
+// This could panic if called before History::new() assigned values.
+// Now: fields are plain bool/usize with defaults, new() is pub(crate),
+// and History always initializes them before returning.
 #[test]
 fn test_turning_point_flags_are_initialized_by_history() {
     let repo = Repository::open(GIT_HIST_REPO).unwrap();
