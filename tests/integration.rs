@@ -1178,3 +1178,37 @@ fn test_turning_point_flags_are_initialized_by_history() {
         "Last TurningPoint in history must be marked as earliest"
     );
 }
+
+// ============================================================
+// Regression: ensure dashboard.rs date display uses user_for_date
+// instead of user_for_name. Previously, --date-of was ignored and
+// the date always followed --name-of.
+// ============================================================
+
+#[test]
+fn bug_dashboard_date_display_uses_wrong_user_type() {
+    // get_commit_info_title is private, so we verify at the source level.
+    // This is intentionally a source-level check — if the method becomes
+    // public, replace with a behavior-based test.
+    let source = include_str!("../src/app/dashboard.rs");
+    let lines: Vec<&str> = source.lines().collect();
+    let target = "state.args().user_for_date";
+    let date_line_index = lines
+        .iter()
+        .position(|line| line.contains(target))
+        .expect("Could not find user_for_date in dashboard.rs");
+
+    let date_block_window = lines
+        .iter()
+        .skip(date_line_index)
+        .take(5)
+        .cloned()
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    assert!(
+        !date_block_window.contains("user_for_name"),
+        "BUG: dashboard.rs date display should NOT use user_for_name. Found in window: {}",
+        date_block_window
+    );
+}
