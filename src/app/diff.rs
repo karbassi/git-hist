@@ -68,7 +68,7 @@ impl<'a> Diff<'a> {
                 .unwrap_or_default()
         };
 
-        assert!(!self.has_new_binary_file);
+        debug_assert!(!self.has_new_binary_file);
         let new_file_text = self
             .repo
             .find_blob(self.new_file_oid)
@@ -161,16 +161,16 @@ impl<'a> Diff<'a> {
                 .skip(index)
                 .find(|line| line.old_index.is_some())
             {
-                assert!(line.index >= index);
-                IndexPair::new(line.index - index, line.old_index.unwrap())
+                debug_assert!(line.index >= index);
+                IndexPair::new(line.index.saturating_sub(index), line.old_index.unwrap())
             } else if let Some(line) = lines
                 .iter()
                 .take(index)
                 .rev()
                 .find(|line| line.old_index.is_some())
             {
-                assert!(line.index < index);
-                IndexPair::new(index - line.index, line.old_index.unwrap())
+                debug_assert!(line.index < index);
+                IndexPair::new(index.saturating_sub(line.index), line.old_index.unwrap())
             } else {
                 IndexPair::new(0, 0)
             }
@@ -186,16 +186,16 @@ impl<'a> Diff<'a> {
                 .skip(index)
                 .find(|line| line.new_index.is_some())
             {
-                assert!(line.index >= index);
-                IndexPair::new(line.index - index, line.new_index.unwrap())
+                debug_assert!(line.index >= index);
+                IndexPair::new(line.index.saturating_sub(index), line.new_index.unwrap())
             } else if let Some(line) = lines
                 .iter()
                 .take(index)
                 .rev()
                 .find(|line| line.new_index.is_some())
             {
-                assert!(line.index < index);
-                IndexPair::new(index - line.index, line.new_index.unwrap())
+                debug_assert!(line.index < index);
+                IndexPair::new(index.saturating_sub(line.index), line.new_index.unwrap())
             } else {
                 IndexPair::new(0, 0)
             }
