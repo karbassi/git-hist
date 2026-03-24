@@ -4,10 +4,12 @@ use clap::{Parser, ValueEnum};
 #[command(
     name = env!("CARGO_PKG_NAME"),
     version = env!("CARGO_PKG_VERSION"),
+    version,
     about = env!("CARGO_PKG_DESCRIPTION"),
 )]
 pub struct Args {
     /// Set a target file path
+    #[arg(value_name = "file")]
     pub file_path: String,
 
     /// Show full commit hashes instead of abbreviated commit hashes
