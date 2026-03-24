@@ -129,11 +129,10 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     let mut file_path = file_path_from_repository;
     let history = History::new(commits.iter().filter_map(|git_commit| {
         let old_tree = git_commit.parent(0).and_then(|p| p.tree()).ok();
-        let new_tree = git_commit.tree().ok();
-        assert!(new_tree.is_some());
+        let new_tree = git_commit.tree().ok()?;
 
         let mut git_diff = repo
-            .diff_tree_to_tree(old_tree.as_ref(), new_tree.as_ref(), None)
+            .diff_tree_to_tree(old_tree.as_ref(), Some(&new_tree), None)
             .unwrap();
 
         // detect file renames
