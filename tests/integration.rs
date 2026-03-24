@@ -1114,15 +1114,8 @@ fn test_deleted_diff_status_uses_old_path() {
     index.write().unwrap();
     let tree_oid = index.write_tree().unwrap();
     let tree = repo.find_tree(tree_oid).unwrap();
-    repo.commit(
-        Some("HEAD"),
-        &sig,
-        &sig,
-        "delete file",
-        &tree,
-        &[&commit1],
-    )
-    .unwrap();
+    repo.commit(Some("HEAD"), &sig, &sig, "delete file", &tree, &[&commit1])
+        .unwrap();
 
     // Get the diff between the two trees (commit1 -> commit2)
     let old_tree = commit1.tree().unwrap();
