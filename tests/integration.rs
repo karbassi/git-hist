@@ -809,7 +809,7 @@ fn test_diff_line_part_text() {
 
 #[test]
 fn test_diff_line_part_emphasize() {
-    use tui::style::{Color, Style};
+    use ratatui::style::{Color, Style};
     let base = Style::default().fg(Color::Green);
 
     let emphasized = DiffLinePart::new("x", true);

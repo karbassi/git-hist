@@ -3,9 +3,9 @@ use crate::app::state::State;
 use crate::args::Args;
 use git2::{Delta, DiffDelta, Oid, Repository};
 use once_cell::sync::OnceCell;
+use ratatui::style::{Color, Style};
 use similar::{ChangeTag, TextDiff};
 use std::{cmp, ops::Deref};
-use tui::style::{Color, Style};
 
 pub struct Diff<'a> {
     status: Delta,
