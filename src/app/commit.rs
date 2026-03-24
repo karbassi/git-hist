@@ -32,11 +32,15 @@ impl<'a> Commit<'a> {
         let long_id = format!("{}", oid);
         let author = commit.author().name().unwrap_or_default().to_string();
         let author_date = chrono::DateTime::<chrono::Local>::from(
-            chrono::Utc.timestamp_opt(commit.author().when().seconds(), 0).unwrap(),
+            chrono::Utc
+                .timestamp_opt(commit.author().when().seconds(), 0)
+                .unwrap(),
         );
         let committer = commit.committer().name().unwrap_or_default().to_string();
         let committer_date = chrono::DateTime::<chrono::Local>::from(
-            chrono::Utc.timestamp_opt(commit.committer().when().seconds(), 0).unwrap(),
+            chrono::Utc
+                .timestamp_opt(commit.committer().when().seconds(), 0)
+                .unwrap(),
         );
         let summary = commit.summary().unwrap_or_default().to_string();
 
