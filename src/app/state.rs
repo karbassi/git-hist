@@ -1,8 +1,9 @@
-use crate::app::dashboard::Dashboard;
 use crate::app::history::{History, TurningPoint};
 use crate::app::terminal::Terminal;
 use crate::args::Args;
 use std::cmp;
+
+const COMMIT_INFO_OUTER_HEIGHT: usize = 4;
 
 pub struct State<'a> {
     point: &'a TurningPoint<'a>,
@@ -139,7 +140,7 @@ impl<'a> State<'a> {
     }
 
     pub fn scroll_page_up(self) -> Self {
-        let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
+        let diff_height = cmp::max(1, self.diff_height());
         let min_index = self.point.diff().allowed_min_index();
         let line_index = cmp::max(min_index, self.line_index.saturating_sub(diff_height));
 
@@ -147,7 +148,7 @@ impl<'a> State<'a> {
     }
 
     pub fn scroll_page_down(self) -> Self {
-        let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
+        let diff_height = cmp::max(1, self.diff_height());
         let max_index = self.point.diff().allowed_max_index(&self);
         let line_index = cmp::min(self.line_index + diff_height, max_index);
 
@@ -185,6 +186,11 @@ impl<'a> State<'a> {
             terminal_height,
             self.args,
         )
+    }
+
+    pub fn diff_height(&self) -> usize {
+        self.terminal_height
+            .saturating_sub(COMMIT_INFO_OUTER_HEIGHT)
     }
 
     pub fn args(&self) -> &'a Args {
