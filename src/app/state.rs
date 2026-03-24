@@ -145,7 +145,7 @@ impl<'a> State<'a> {
 
     pub fn scroll_page_up(self) -> Self {
         let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
-        let min_index = self.point.diff().allowed_min_index(&self);
+        let min_index = self.point.diff().allowed_min_index();
 
         let line_index = cmp::max(min_index, self.line_index.saturating_sub(diff_height));
 
@@ -174,7 +174,7 @@ impl<'a> State<'a> {
     }
 
     pub fn scroll_to_top(self) -> Self {
-        let line_index = self.point.diff().allowed_min_index(&self);
+        let line_index = self.point.diff().allowed_min_index();
 
         State::new(
             self.point,
