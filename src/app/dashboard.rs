@@ -187,21 +187,21 @@ impl<'a> Dashboard<'a> {
                 style::Style::default().fg(style::Color::LightMagenta),
             ));
             commit_info_title.push(text::Span::raw(" "));
-            let ref_names: Vec<String> = references
-                .head_names()
-                .into_iter()
-                .chain(references.local_branch_names())
-                .chain(references.remote_branch_names())
-                .chain(references.tag_names())
-                .collect();
+            if !references.is_empty() {
+                let ref_names: Vec<String> = references
+                    .head_names()
+                    .into_iter()
+                    .chain(references.local_branch_names())
+                    .chain(references.remote_branch_names())
+                    .chain(references.tag_names())
+                    .collect();
 
-            if !ref_names.is_empty() {
                 commit_info_title.push(text::Span::raw("("));
-                for (i, name) in ref_names.iter().enumerate() {
+                for (i, name) in ref_names.into_iter().enumerate() {
                     if i > 0 {
                         commit_info_title.push(text::Span::raw(", "));
                     }
-                    commit_info_title.push(text::Span::raw(name.clone()));
+                    commit_info_title.push(text::Span::raw(name));
                 }
                 commit_info_title.push(text::Span::raw(")"));
                 commit_info_title.push(text::Span::raw(" "));
