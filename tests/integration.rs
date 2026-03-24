@@ -1115,3 +1115,27 @@ fn test_deleted_diff_should_reference_old_path() {
         }
     }
 }
+
+// ============================================================
+// BUG #3: strip_prefix panics when workdir is outside repo
+// get_history_with_workdir used to .unwrap() the strip_prefix
+// result, causing a panic instead of returning an error.
+// ============================================================
+
+#[test]
+fn test_get_history_path_outside_repo_returns_error() {
+    let repo_path = Path::new(GIT_HIST_REPO);
+    let repo = Repository::open(repo_path).unwrap();
+    let args = default_args("Cargo.toml");
+    let result = git::get_history_with_workdir("Cargo.toml", &repo, &args, Path::new("/tmp"));
+    assert!(
+        result.is_err(),
+        "Path outside repo should return error, not panic"
+    );
+    let err_msg = format!("{:#}", result.err().unwrap());
+    assert!(
+        err_msg.contains("not inside"),
+        "Error should mention path not inside repo, got: {}",
+        err_msg
+    );
+}
