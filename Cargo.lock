@@ -346,7 +346,7 @@ dependencies = [
 
 [[package]]
 name = "git-hist"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -354,7 +354,6 @@ dependencies = [
  "crossterm",
  "git2",
  "itertools 0.10.5",
- "once_cell",
  "ratatui",
  "similar",
 ]
