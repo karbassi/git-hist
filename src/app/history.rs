@@ -5,9 +5,9 @@ use anyhow::{ensure, Result};
 pub struct TurningPoint<'a> {
     commit: Commit<'a>,
     diff: Diff<'a>,
-    is_latest: Option<bool>,
-    is_earliest: Option<bool>,
-    index_of_history: Option<usize>,
+    is_latest: bool,
+    is_earliest: bool,
+    index_of_history: usize,
 }
 
 impl<'a> TurningPoint<'a> {
@@ -15,18 +15,18 @@ impl<'a> TurningPoint<'a> {
         Self {
             commit,
             diff,
-            is_latest: None,
-            is_earliest: None,
-            index_of_history: None,
+            is_latest: false,
+            is_earliest: false,
+            index_of_history: 0,
         }
     }
 
     pub fn is_latest(&self) -> bool {
-        self.is_latest.unwrap()
+        self.is_latest
     }
 
     pub fn is_earliest(&self) -> bool {
-        self.is_earliest.unwrap()
+        self.is_earliest
     }
 
     pub fn commit(&self) -> &Commit<'_> {
@@ -47,7 +47,7 @@ impl<'a> History<'a> {
         let mut points = points
             .enumerate()
             .map(|(i, mut p)| {
-                p.index_of_history = Some(i);
+                p.index_of_history = i;
                 p
             })
             .collect::<Vec<_>>();
@@ -58,8 +58,8 @@ impl<'a> History<'a> {
 
         let len = points.len();
         for point in points.iter_mut() {
-            point.is_latest = Some(point.index_of_history.unwrap() == 0);
-            point.is_earliest = Some(point.index_of_history.unwrap() + 1 == len);
+            point.is_latest = point.index_of_history == 0;
+            point.is_earliest = point.index_of_history + 1 == len;
         }
         Ok(History { points })
     }
@@ -71,14 +71,14 @@ impl<'a> History<'a> {
     pub fn backward(&self, point: &TurningPoint) -> Option<&TurningPoint<'_>> {
         point
             .index_of_history
-            .and_then(|i| i.checked_add(1))
+            .checked_add(1)
             .and_then(|i| self.points.get(i))
     }
 
     pub fn forward(&self, point: &TurningPoint) -> Option<&TurningPoint<'_>> {
         point
             .index_of_history
-            .and_then(|i| i.checked_sub(1))
+            .checked_sub(1)
             .and_then(|i| self.points.get(i))
     }
 }
