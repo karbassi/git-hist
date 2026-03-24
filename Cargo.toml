@@ -2,7 +2,7 @@
 authors = ["Ark <target.ark@gmail.com>"]
 categories = ["command-line-utilities"]
 description = "A CLI tool to quickly browse the git history of files on a terminal"
-edition = "2018"
+edition = "2021"
 keywords = ["git", "cli", "terminal", "diff"]
 license = "MIT"
 name = "git-hist"
