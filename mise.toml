@@ -1,0 +1,22 @@
+[tools]
+rust = "latest"
+
+[tasks.fmt]
+description = "Check code formatting"
+run = "cargo fmt --all -- --check"
+
+[tasks.clippy]
+description = "Run clippy lints"
+run = "cargo clippy -- -D warnings"
+
+[tasks.test]
+description = "Run test suite"
+run = "cargo test"
+
+[tasks.lint]
+description = "Run all lint checks (fmt + clippy)"
+depends = ["fmt", "clippy"]
+
+[tasks.check]
+description = "Run all CI checks (fmt + clippy + test)"
+depends = ["fmt", "clippy", "test"]
