@@ -1,1 +1,13 @@
 /target
+.temp/
+
+# Editor
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
