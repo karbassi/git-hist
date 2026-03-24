@@ -1131,11 +1131,7 @@ fn bug_dashboard_date_display_uses_wrong_user_type() {
         .expect("Could not find date computation block in dashboard.rs");
 
     let date_block = &source[date_block_start..];
-    let date_block_window = date_block
-        .lines()
-        .take(5)
-        .collect::<Vec<_>>()
-        .join("\n");
+    let date_block_window = date_block.lines().take(5).collect::<Vec<_>>().join("\n");
 
     assert!(
         date_block_window.contains("user_for_date"),
