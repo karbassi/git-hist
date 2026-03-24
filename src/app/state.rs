@@ -29,6 +29,31 @@ impl<'a> State<'a> {
         }
     }
 
+    fn with_line_index(self, line_index: usize) -> Self {
+        State::new(
+            self.point,
+            line_index,
+            self.max_line_number_len,
+            self.terminal_height,
+            self.args,
+        )
+    }
+
+    fn with_point(
+        self,
+        point: &'a TurningPoint<'a>,
+        line_index: usize,
+        max_line_number_len: usize,
+    ) -> Self {
+        State::new(
+            point,
+            line_index,
+            max_line_number_len,
+            self.terminal_height,
+            self.args,
+        )
+    }
+
     pub fn first(history: &'a History<'a>, terminal: &Terminal, args: &'a Args) -> Self {
         let point = history.latest().unwrap();
         let line_index = 0;
@@ -71,18 +96,9 @@ impl<'a> State<'a> {
                 .find_index_from_new_index(index_pair.partial_index())
                 .map(|index| index.saturating_sub(index_pair.relative_index()))
                 .unwrap_or(0);
-            let max_line_number_len = cmp::max(
-                self.max_line_number_len,
-                next_point.diff().max_line_number_len(),
-            );
+            let max_line_number_len = next_point.diff().max_line_number_len();
 
-            State::new(
-                next_point,
-                line_index,
-                max_line_number_len,
-                self.terminal_height,
-                self.args,
-            )
+            self.with_point(next_point, line_index, max_line_number_len)
         } else {
             self
         }
@@ -96,18 +112,9 @@ impl<'a> State<'a> {
                 .find_index_from_old_index(index_pair.partial_index())
                 .map(|index| index.saturating_sub(index_pair.relative_index()))
                 .unwrap_or(0);
-            let max_line_number_len = cmp::max(
-                self.max_line_number_len,
-                next_point.diff().max_line_number_len(),
-            );
+            let max_line_number_len = next_point.diff().max_line_number_len();
 
-            State::new(
-                next_point,
-                line_index,
-                max_line_number_len,
-                self.terminal_height,
-                self.args,
-            )
+            self.with_point(next_point, line_index, max_line_number_len)
         } else {
             self
         }
@@ -116,13 +123,7 @@ impl<'a> State<'a> {
     pub fn scroll_line_up(self) -> Self {
         if self.can_move_up() {
             let line_index = self.line_index - 1;
-            State::new(
-                self.point,
-                line_index,
-                self.max_line_number_len,
-                self.terminal_height,
-                self.args,
-            )
+            self.with_line_index(line_index)
         } else {
             self
         }
@@ -131,13 +132,7 @@ impl<'a> State<'a> {
     pub fn scroll_line_down(self) -> Self {
         if self.can_move_down() {
             let line_index = self.line_index + 1;
-            State::new(
-                self.point,
-                line_index,
-                self.max_line_number_len,
-                self.terminal_height,
-                self.args,
-            )
+            self.with_line_index(line_index)
         } else {
             self
         }
@@ -146,55 +141,27 @@ impl<'a> State<'a> {
     pub fn scroll_page_up(self) -> Self {
         let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
         let min_index = self.point.diff().allowed_min_index();
-
         let line_index = cmp::max(min_index, self.line_index.saturating_sub(diff_height));
 
-        State::new(
-            self.point,
-            line_index,
-            self.max_line_number_len,
-            self.terminal_height,
-            self.args,
-        )
+        self.with_line_index(line_index)
     }
 
     pub fn scroll_page_down(self) -> Self {
         let diff_height = cmp::max(1, Dashboard::diff_height(self.terminal_height));
         let max_index = self.point.diff().allowed_max_index(&self);
-
         let line_index = cmp::min(self.line_index + diff_height, max_index);
 
-        State::new(
-            self.point,
-            line_index,
-            self.max_line_number_len,
-            self.terminal_height,
-            self.args,
-        )
+        self.with_line_index(line_index)
     }
 
     pub fn scroll_to_top(self) -> Self {
         let line_index = self.point.diff().allowed_min_index();
-
-        State::new(
-            self.point,
-            line_index,
-            self.max_line_number_len,
-            self.terminal_height,
-            self.args,
-        )
+        self.with_line_index(line_index)
     }
 
     pub fn scroll_to_bottom(self) -> Self {
         let line_index = self.point.diff().allowed_max_index(&self);
-
-        State::new(
-            self.point,
-            line_index,
-            self.max_line_number_len,
-            self.terminal_height,
-            self.args,
-        )
+        self.with_line_index(line_index)
     }
 
     pub fn terminal_height(&self) -> usize {
