@@ -376,7 +376,9 @@ fn test_get_repository_at_assistant() {
 
 #[test]
 fn test_get_repository_at_nonexistent_path() {
-    let result = git::get_repository_at(Path::new("/tmp/nonexistent-repo-xyz"));
+    let result = git::get_repository_at(
+        &std::env::temp_dir().join(format!("nonexistent-repo-{}", std::process::id())),
+    );
     assert!(result.is_err());
 }
 
@@ -1210,5 +1212,33 @@ fn bug_dashboard_date_display_uses_wrong_user_type() {
         !date_block_window.contains("user_for_name"),
         "BUG: dashboard.rs date display should NOT use user_for_name. Found in window: {}",
         date_block_window
+    );
+}
+
+// ============================================================
+// BUG #3: strip_prefix panics when workdir is outside repo
+// get_history_with_workdir used to .unwrap() the strip_prefix
+// result, causing a panic instead of returning an error.
+// ============================================================
+
+#[test]
+fn test_get_history_path_outside_repo_returns_error() {
+    let repo_path = Path::new(GIT_HIST_REPO);
+    let repo = Repository::open(repo_path).unwrap();
+    let args = default_args("Cargo.toml");
+    let repo_parent = repo_path
+        .parent()
+        .expect("repo should have a parent directory");
+    let outside_dir = repo_parent.join("git_hist_outside_repo_test");
+    let result = git::get_history_with_workdir("Cargo.toml", &repo, &args, &outside_dir);
+    assert!(
+        result.is_err(),
+        "Path outside repo should return error, not panic"
+    );
+    let err_msg = format!("{:#}", result.err().unwrap());
+    assert!(
+        err_msg.contains("not inside"),
+        "Error should mention path not inside repo, got: {}",
+        err_msg
     );
 }
