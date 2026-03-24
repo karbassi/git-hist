@@ -1115,3 +1115,34 @@ fn test_deleted_diff_should_reference_old_path() {
         }
     }
 }
+
+// ============================================================
+// BUG: dashboard.rs date display uses user_for_name instead of
+// user_for_date. When user_for_name=Author and user_for_date=Committer,
+// the date shown is the author date, ignoring the user_for_date setting.
+// ============================================================
+
+#[test]
+fn bug_dashboard_date_display_uses_wrong_user_type() {
+    let source = include_str!("../src/app/dashboard.rs");
+
+    let date_block_start = source
+        .find("let date = (match state.args().")
+        .expect("Could not find date computation block in dashboard.rs");
+
+    let date_block = &source[date_block_start..];
+    let first_line = date_block.lines().next().unwrap();
+
+    assert!(
+        first_line.contains("user_for_date"),
+        "BUG: dashboard.rs date display uses user_for_name instead of user_for_date. \
+         Found: {}",
+        first_line
+    );
+
+    assert!(
+        !first_line.contains("user_for_name"),
+        "BUG: dashboard.rs date display should NOT use user_for_name. Found: {}",
+        first_line
+    );
+}
