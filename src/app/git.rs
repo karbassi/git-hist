@@ -35,9 +35,8 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     workdir: &path::Path,
 ) -> Result<History<'a>> {
     let repo_root = repo
-        .path()
-        .parent()
-        .context("Failed to determine repository root")?;
+        .workdir()
+        .context("Failed to determine repository workdir")?;
     let file_path_from_repository = workdir
         .join(&file_path)
         .strip_prefix(repo_root)
@@ -56,13 +55,13 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     revwalk.push_head().context("Failed to find HEAD")?;
     revwalk.simplify_first_parent()?;
 
-    let oids = revwalk
-        .collect::<std::result::Result<Vec<_>, _>>()
-        .context("Failed to traverse commit history")?;
-    let commits = oids
-        .into_iter()
-        .filter_map(|oid| repo.find_commit(oid).ok())
-        .collect::<Vec<_>>();
+    let mut commits = Vec::new();
+    for oid_result in revwalk {
+        let oid = oid_result.context("Failed to traverse commit history")?;
+        if let Ok(commit) = repo.find_commit(oid) {
+            commits.push(commit);
+        }
+    }
     let head_tree = commits
         .first()
         .context("Failed to get any commit")?
