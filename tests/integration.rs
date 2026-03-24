@@ -1117,13 +1117,16 @@ fn test_deleted_diff_should_reference_old_path() {
 }
 
 // ============================================================
-// BUG: dashboard.rs date display uses user_for_name instead of
-// user_for_date. When user_for_name=Author and user_for_date=Committer,
-// the date shown is the author date, ignoring the user_for_date setting.
+// Regression: ensure dashboard.rs date display uses user_for_date
+// instead of user_for_name. Previously, --date-of was ignored and
+// the date always followed --name-of.
 // ============================================================
 
 #[test]
 fn bug_dashboard_date_display_uses_wrong_user_type() {
+    // get_commit_info_title is private, so we verify at the source level.
+    // This is intentionally a source-level check — if the method becomes
+    // public, replace with a behavior-based test.
     let source = include_str!("../src/app/dashboard.rs");
 
     let date_block_start = source
