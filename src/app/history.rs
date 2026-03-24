@@ -11,7 +11,7 @@ pub struct TurningPoint<'a> {
 }
 
 impl<'a> TurningPoint<'a> {
-    pub fn new(commit: Commit<'a>, diff: Diff<'a>) -> Self {
+    pub(crate) fn new(commit: Commit<'a>, diff: Diff<'a>) -> Self {
         Self {
             commit,
             diff,
