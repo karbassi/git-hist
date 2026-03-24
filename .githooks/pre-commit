@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+
+cargo fmt --all -- --check || {
+    echo "cargo fmt check failed. Run 'cargo fmt' to fix."
+    exit 1
+}
+
+cargo clippy -- -D warnings || {
+    echo "cargo clippy failed. Fix warnings before committing."
+    exit 1
+}
