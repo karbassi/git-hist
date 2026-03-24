@@ -1131,18 +1131,22 @@ fn bug_dashboard_date_display_uses_wrong_user_type() {
         .expect("Could not find date computation block in dashboard.rs");
 
     let date_block = &source[date_block_start..];
-    let first_line = date_block.lines().next().unwrap();
+    let date_block_window = date_block
+        .lines()
+        .take(5)
+        .collect::<Vec<_>>()
+        .join("\n");
 
     assert!(
-        first_line.contains("user_for_date"),
+        date_block_window.contains("user_for_date"),
         "BUG: dashboard.rs date display uses user_for_name instead of user_for_date. \
-         Found: {}",
-        first_line
+         Found in window: {}",
+        date_block_window
     );
 
     assert!(
-        !first_line.contains("user_for_name"),
-        "BUG: dashboard.rs date display should NOT use user_for_name. Found: {}",
-        first_line
+        !date_block_window.contains("user_for_name"),
+        "BUG: dashboard.rs date display should NOT use user_for_name. Found in window: {}",
+        date_block_window
     );
 }
