@@ -61,17 +61,15 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
         .unwrap();
     let latest_file_oid = head_tree
         .get_path(&file_path_from_repository)
-        .or_else(|_| {
+        .map_err(|_| {
             // Check if the path goes through a submodule (commit entry in tree)
             let mut prefix = path::PathBuf::new();
             for component in file_path_from_repository.components() {
                 prefix.push(component);
                 if let Ok(entry) = head_tree.get_path(&prefix) {
                     if entry.kind() == Some(ObjectType::Commit) {
-                        let remaining = file_path_from_repository
-                            .strip_prefix(&prefix)
-                            .unwrap();
-                        return Err(anyhow!(
+                        let remaining = file_path_from_repository.strip_prefix(&prefix).unwrap();
+                        return anyhow!(
                             "The path '{}' is inside the submodule '{}'. \
                              Run git-hist from within the submodule instead:\n  \
                              cd {} && git hist {}",
@@ -79,14 +77,14 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
                             prefix.display(),
                             prefix.display(),
                             remaining.display()
-                        ));
+                        );
                     }
                 }
             }
-            Err(anyhow!(
+            anyhow!(
                 "File '{}' not found on HEAD. Check the path and try again",
                 file_path.as_ref().to_string_lossy()
-            ))
+            )
         })
         .and_then(|entry| {
             if let Some(ObjectType::Blob) = entry.kind() {
