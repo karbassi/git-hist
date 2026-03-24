@@ -1,3 +1,6 @@
+[hooks]
+postinstall = "git config core.hooksPath .githooks"
+
 [tools]
 rust = "latest"
 
