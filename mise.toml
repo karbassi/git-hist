@@ -8,6 +8,10 @@ rust = "latest"
 description = "Check code formatting"
 run = "cargo fmt --all -- --check"
 
+[tasks."fmt:fix"]
+description = "Fix code formatting"
+run = "cargo fmt --all"
+
 [tasks.clippy]
 description = "Run clippy lints"
 run = "cargo clippy -- -D warnings"
