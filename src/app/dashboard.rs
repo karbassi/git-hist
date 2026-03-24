@@ -3,20 +3,20 @@ use crate::app::terminal::Terminal;
 use crate::args::UserType;
 use anyhow::Result;
 use once_cell::sync::Lazy;
-use tui::{layout, style, text, widgets};
+use ratatui::{layout, style, text, widgets};
 
 const COMMIT_INFO_INNER_HEIGHT: u16 = 2;
 const COMMIT_INFO_OUTER_HEIGHT: u16 = COMMIT_INFO_INNER_HEIGHT + 2;
 const COMMIT_INFO_HORIZONTAL_PADDING: u16 = 1;
 const NAVI_WIDTH: u16 = 3;
 
-static BINARY_ALERT_TEXT: Lazy<Vec<text::Spans>> = Lazy::new(|| {
+static BINARY_ALERT_TEXT: Lazy<Vec<text::Line<'static>>> = Lazy::new(|| {
     vec![
-        text::Spans::from(vec![text::Span::styled(
+        text::Line::from(vec![text::Span::styled(
             "╭──────────────────────────────────────────────╮",
             style::Style::default().add_modifier(style::Modifier::DIM),
         )]),
-        text::Spans::from(vec![
+        text::Line::from(vec![
             text::Span::styled(
                 "│",
                 style::Style::default().add_modifier(style::Modifier::DIM),
@@ -27,7 +27,7 @@ static BINARY_ALERT_TEXT: Lazy<Vec<text::Spans>> = Lazy::new(|| {
                 style::Style::default().add_modifier(style::Modifier::DIM),
             ),
         ]),
-        text::Spans::from(vec![text::Span::styled(
+        text::Line::from(vec![text::Span::styled(
             "╰──────────────────────────────────────────────╯",
             style::Style::default().add_modifier(style::Modifier::DIM),
         )]),
@@ -36,7 +36,7 @@ static BINARY_ALERT_TEXT: Lazy<Vec<text::Spans>> = Lazy::new(|| {
 
 #[derive(Debug)]
 pub struct Dashboard<'a> {
-    commit_info_title: text::Spans<'a>,
+    commit_info_title: text::Line<'a>,
     commit_info_paragraph: widgets::Paragraph<'a>,
     left_navi_paragraph: widgets::Paragraph<'a>,
     right_navi_paragraph: widgets::Paragraph<'a>,
@@ -65,7 +65,7 @@ impl<'a> Dashboard<'a> {
                     ]
                     .as_ref(),
                 )
-                .split(frame.size());
+                .split(frame.area());
 
             let commit_chunk = vertical_chunks[0];
             let diff_chunk = vertical_chunks[1];
@@ -131,10 +131,10 @@ impl<'a> Dashboard<'a> {
         let down_symbol = if state.can_move_down() { "v" } else { "" };
 
         widgets::Paragraph::new(vec![
-            text::Spans::from(format!("{:^1$}", up_symbol, usize::from(NAVI_WIDTH))),
-            text::Spans::from(format!("{:<1$}", backward_symbol, usize::from(NAVI_WIDTH))),
-            text::Spans::from(format!("{:<1$}", backward_symbol, usize::from(NAVI_WIDTH))),
-            text::Spans::from(format!("{:^1$}", down_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:^1$}", up_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:<1$}", backward_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:<1$}", backward_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:^1$}", down_symbol, usize::from(NAVI_WIDTH))),
         ])
     }
 
@@ -144,14 +144,14 @@ impl<'a> Dashboard<'a> {
         let down_symbol = if state.can_move_down() { "v" } else { "" };
 
         widgets::Paragraph::new(vec![
-            text::Spans::from(format!("{:^1$}", up_symbol, usize::from(NAVI_WIDTH))),
-            text::Spans::from(format!("{:>1$}", forward_symbol, usize::from(NAVI_WIDTH))),
-            text::Spans::from(format!("{:>1$}", forward_symbol, usize::from(NAVI_WIDTH))),
-            text::Spans::from(format!("{:^1$}", down_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:^1$}", up_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:>1$}", forward_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:>1$}", forward_symbol, usize::from(NAVI_WIDTH))),
+            text::Line::from(format!("{:^1$}", down_symbol, usize::from(NAVI_WIDTH))),
         ])
     }
 
-    fn get_commit_info_title(state: &'a State) -> text::Spans<'a> {
+    fn get_commit_info_title(state: &'a State) -> text::Line<'a> {
         let hash = if state.args().should_use_full_commit_hash {
             state.point().commit().long_id()
         } else {
@@ -216,13 +216,13 @@ impl<'a> Dashboard<'a> {
             commit_info_title.push(text::Span::raw(" ]"));
         }
 
-        text::Spans::from(commit_info_title)
+        text::Line::from(commit_info_title)
     }
 
     fn get_commit_info_paragraph(state: &'a State) -> widgets::Paragraph<'a> {
         let commit_summary =
-            text::Spans::from(vec![text::Span::raw(state.point().commit().summary())]);
-        let change_status = text::Spans(vec![text::Span::raw(state.point().diff().status())]);
+            text::Line::from(vec![text::Span::raw(state.point().commit().summary())]);
+        let change_status = text::Line::from(vec![text::Span::raw(state.point().diff().status())]);
 
         widgets::Paragraph::new(vec![commit_summary, change_status])
     }
@@ -270,7 +270,7 @@ impl<'a> Dashboard<'a> {
                     spans.push(text::Span::styled(part.text(), style));
                 }
 
-                let spans = text::Spans::from(spans);
+                let spans = text::Line::from(spans);
 
                 diff_text.push(spans);
             }
@@ -281,7 +281,7 @@ impl<'a> Dashboard<'a> {
 
             let diff_height = Self::diff_height(state.terminal_height());
             let offset = diff_height.saturating_sub(BINARY_ALERT_TEXT.len()) / 2;
-            alert_text.append(&mut vec![text::Spans::from(vec![]); offset]);
+            alert_text.append(&mut vec![text::Line::from(vec![]); offset]);
             alert_text.append(&mut BINARY_ALERT_TEXT.clone());
 
             widgets::Paragraph::new(alert_text).alignment(layout::Alignment::Center)
