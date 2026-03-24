@@ -1,8 +1,8 @@
 # git-hist
 
-[![](https://github.com/arkark/git-hist/workflows/Rust/badge.svg)](https://github.com/arkark/git-hist/actions)
+[![Rust](https://github.com/karbassi/git-hist/workflows/Rust/badge.svg)](https://github.com/karbassi/git-hist/actions)
 [![crates.io](https://img.shields.io/crates/v/git-hist.svg)](https://crates.io/crates/git-hist)
-[![license: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/arkark/git-hist/blob/master/LICENSE)
+[![license: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/karbassi/git-hist/blob/main/LICENSE)
 
 A CLI tool to quickly browse the git history of files **on a terminal**. This project is inspired by [git-history](https://github.com/pomber/git-history).
 
@@ -14,6 +14,14 @@ A CLI tool to quickly browse the git history of files **on a terminal**. This pr
 
 ```sh
 cargo install git-hist
+```
+
+### From source
+
+```sh
+git clone https://github.com/karbassi/git-hist.git
+cd git-hist
+cargo install --path .
 ```
 
 ## Usage
@@ -32,27 +40,60 @@ You can use `git-hist` as a git subcommand, so the hyphen is not required.
 - <kbd>Home</kbd> / <kbd>End</kbd> : Scroll to the top/bottom.
 - <kbd>q</kbd>, <kbd>Ctrl</kbd>+<kbd>c</kbd>, <kbd>Ctrl</kbd>+<kbd>d</kbd> : Exit.
 
-### Help
+### Options
+
+```
+Usage: git-hist [OPTIONS] <file>
+
+Arguments:
+  <file>  Set a target file path
+
+Options:
+      --full-hash             Show full commit hashes instead of abbreviated commit hashes
+      --beyond-last-line      Set whether the view will scroll beyond the last line
+      --emphasize-diff        Set whether the view will emphasize different parts
+      --name-of <user>        Use whether authors or committers for names [default: author]
+                              [possible values: author, committer]
+      --date-of <user>        Use whether authors or committers for dates [default: author]
+                              [possible values: author, committer]
+      --date-format <format>  Set date format [default: [%Y-%m-%d]]
+      --tab-size <size>       Set the number of spaces for a tab character (\t) [default: 4]
+  -h, --help                  Print help
+  -V, --version               Print version
+```
+
+## Development
+
+### Prerequisites
+
+- [Rust](https://www.rust-lang.org/tools/install)
+- [mise](https://mise.jdx.dev/) (optional, for task running and git hooks)
+
+### Setup
 
 ```sh
-$ git-hist --help
-git-hist {{ version }}
-A CLI tool to quickly browse the git history of files on a terminal
-
-USAGE:
-    git-hist [OPTIONS] <file>
-
-ARGS:
-    <file>    Set a target file path
-
-OPTIONS:
-        --beyond-last-line        Set whether the view will scroll beyond the last line
-        --date-format <format>    Set date format: ref. https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html [default: [%Y-%m-%d]]
-        --date-of <user>          Use whether authors or committers for dates [default: author] [possible values: author, committer]
-        --emphasize-diff          Set whether the view will emphasize different parts
-        --full-hash               Show full commit hashes instead of abbreviated commit hashes
-    -h, --help                    Print help information
-        --name-of <user>          Use whether authors or committers for names [default: author] [possible values: author, committer]
-        --tab-size <size>         Set the number of spaces for a tab character (\t) [default: 4]
-    -v, --version                 Print version information
+git clone https://github.com/karbassi/git-hist.git
+cd git-hist
+mise install        # installs Rust toolchain and configures git hooks
 ```
+
+### Tasks
+
+```sh
+mise run fmt        # fix code formatting
+mise run clippy     # run clippy lints
+mise run test       # run test suite
+mise run lint       # fmt + clippy
+mise run check      # fmt + clippy + test
+```
+
+A pre-commit hook runs `cargo fmt` and `cargo clippy` automatically on every commit.
+
+## Contributors
+
+- [Ark](https://github.com/arkark) — original author
+- [Ali Karbassi](https://github.com/karbassi)
+
+## License
+
+MIT

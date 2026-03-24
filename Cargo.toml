@@ -1,5 +1,5 @@
 [package]
-authors = ["Ark <target.ark@gmail.com>"]
+authors = ["Ark <target.ark@gmail.com>", "Ali Karbassi <ali@karbassi.com>"]
 categories = ["command-line-utilities"]
 description = "A CLI tool to quickly browse the git history of files on a terminal"
 edition = "2021"
