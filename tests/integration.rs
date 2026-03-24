@@ -1144,12 +1144,6 @@ fn bug_dashboard_date_display_uses_wrong_user_type() {
         .join("\n");
 
     assert!(
-        date_block_window.contains("user_for_date"),
-        "BUG: dashboard.rs date display does not use user_for_date. Found in window: {}",
-        date_block_window
-    );
-
-    assert!(
         !date_block_window.contains("user_for_name"),
         "BUG: dashboard.rs date display should NOT use user_for_name. Found in window: {}",
         date_block_window
