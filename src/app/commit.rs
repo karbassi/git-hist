@@ -1,8 +1,7 @@
 use chrono::TimeZone;
 use git2::{Commit as GitCommit, Oid, Repository};
 use itertools::Itertools;
-use once_cell::sync::OnceCell;
-use std::{collections::HashMap, fmt};
+use std::{collections::HashMap, fmt, sync::OnceLock};
 
 const HEAD_NAME: &str = "HEAD";
 
@@ -15,7 +14,7 @@ pub struct Commit<'a> {
     committer_name: String,
     committer_date: chrono::DateTime<chrono::Local>,
     summary: String,
-    references: OnceCell<References>,
+    references: OnceLock<References>,
     repo: &'a Repository,
 }
 
@@ -53,7 +52,7 @@ impl<'a> Commit<'a> {
             committer_name: committer,
             committer_date,
             summary,
-            references: OnceCell::new(),
+            references: OnceLock::new(),
             repo,
         }
     }

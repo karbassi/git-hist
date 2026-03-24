@@ -2,15 +2,15 @@ use crate::app::state::State;
 use crate::app::terminal::Terminal;
 use crate::args::UserType;
 use anyhow::Result;
-use once_cell::sync::Lazy;
 use ratatui::{layout, style, text, widgets};
+use std::sync::LazyLock;
 
 const COMMIT_INFO_INNER_HEIGHT: u16 = 2;
 const COMMIT_INFO_OUTER_HEIGHT: u16 = COMMIT_INFO_INNER_HEIGHT + 2;
 const COMMIT_INFO_HORIZONTAL_PADDING: u16 = 1;
 const NAVI_WIDTH: u16 = 3;
 
-static BINARY_ALERT_TEXT: Lazy<Vec<text::Line<'static>>> = Lazy::new(|| {
+static BINARY_ALERT_TEXT: LazyLock<Vec<text::Line<'static>>> = LazyLock::new(|| {
     vec![
         text::Line::from(vec![text::Span::styled(
             "╭──────────────────────────────────────────────╮",

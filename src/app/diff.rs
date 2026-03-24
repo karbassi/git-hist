@@ -1,10 +1,9 @@
 use crate::app::state::State;
 use crate::args::Args;
 use git2::{Delta, DiffDelta, Oid, Repository};
-use once_cell::sync::OnceCell;
 use ratatui::style::{Color, Style};
 use similar::{ChangeTag, TextDiff};
-use std::cmp;
+use std::{cmp, sync::OnceLock};
 
 pub struct Diff<'a> {
     status: Delta,
@@ -14,7 +13,7 @@ pub struct Diff<'a> {
     new_path: Option<String>,
     has_old_binary_file: bool,
     has_new_binary_file: bool,
-    lines: OnceCell<Vec<DiffLine>>,
+    lines: OnceLock<Vec<DiffLine>>,
     repo: &'a Repository,
     args: &'a Args,
 }
@@ -43,7 +42,7 @@ impl<'a> Diff<'a> {
                 .find_blob(new_file_oid)
                 .map(|blob| blob.is_binary())
                 .unwrap_or(false),
-            lines: OnceCell::new(),
+            lines: OnceLock::new(),
             repo,
             args,
         }
