@@ -188,24 +188,21 @@ impl<'a> Dashboard<'a> {
             ));
             commit_info_title.push(text::Span::raw(" "));
             if !references.is_empty() {
+                let ref_names: Vec<String> = references
+                    .head_names()
+                    .into_iter()
+                    .chain(references.local_branch_names())
+                    .chain(references.remote_branch_names())
+                    .chain(references.tag_names())
+                    .collect();
+
                 commit_info_title.push(text::Span::raw("("));
-                for name in references.head_names().into_iter() {
+                for (i, name) in ref_names.into_iter().enumerate() {
+                    if i > 0 {
+                        commit_info_title.push(text::Span::raw(", "));
+                    }
                     commit_info_title.push(text::Span::raw(name));
-                    commit_info_title.push(text::Span::raw(", "));
                 }
-                for name in references.local_branch_names().into_iter() {
-                    commit_info_title.push(text::Span::raw(name));
-                    commit_info_title.push(text::Span::raw(", "));
-                }
-                for name in references.remote_branch_names().into_iter() {
-                    commit_info_title.push(text::Span::raw(name));
-                    commit_info_title.push(text::Span::raw(", "));
-                }
-                for name in references.tag_names().into_iter() {
-                    commit_info_title.push(text::Span::raw(name));
-                    commit_info_title.push(text::Span::raw(", "));
-                }
-                commit_info_title.pop();
                 commit_info_title.push(text::Span::raw(")"));
                 commit_info_title.push(text::Span::raw(" "));
             }
