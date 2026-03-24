@@ -56,8 +56,12 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     revwalk.push_head().context("Failed to find HEAD")?;
     revwalk.simplify_first_parent()?;
 
-    let commits = revwalk
-        .filter_map(|oid| oid.and_then(|oid| repo.find_commit(oid)).ok())
+    let oids = revwalk
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .context("Failed to traverse commit history")?;
+    let commits = oids
+        .into_iter()
+        .filter_map(|oid| repo.find_commit(oid).ok())
         .collect::<Vec<_>>();
     let head_tree = commits
         .first()

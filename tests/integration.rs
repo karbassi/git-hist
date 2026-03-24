@@ -376,7 +376,7 @@ fn test_get_repository_at_assistant() {
 
 #[test]
 fn test_get_repository_at_nonexistent_path() {
-    let result = git::get_repository_at(Path::new("/tmp/nonexistent-repo-xyz"));
+    let result = git::get_repository_at(&std::env::temp_dir().join("nonexistent-repo-xyz"));
     assert!(result.is_err());
 }
 
@@ -1127,7 +1127,7 @@ fn test_get_history_path_outside_repo_returns_error() {
     let repo_path = Path::new(GIT_HIST_REPO);
     let repo = Repository::open(repo_path).unwrap();
     let args = default_args("Cargo.toml");
-    let result = git::get_history_with_workdir("Cargo.toml", &repo, &args, Path::new("/tmp"));
+    let result = git::get_history_with_workdir("Cargo.toml", &repo, &args, &std::env::temp_dir());
     assert!(
         result.is_err(),
         "Path outside repo should return error, not panic"
