@@ -77,7 +77,7 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
             }
         })?
         .tree()
-        .unwrap();
+        .context("Failed to read HEAD commit tree")?;
     let latest_file_oid = head_tree
         .get_path(&file_path_from_repository)
         .map_err(|_| {
@@ -133,12 +133,12 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
 
         let mut git_diff = repo
             .diff_tree_to_tree(old_tree.as_ref(), Some(&new_tree), None)
-            .unwrap();
+            .ok()?;
 
         // detect file renames
         git_diff
             .find_similar(Some(DiffFindOptions::new().renames(true)))
-            .unwrap();
+            .ok()?;
 
         let delta = git_diff.deltas().find(|delta| {
             delta.new_file().id() == file_oid
@@ -150,7 +150,7 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
         });
         if let Some(delta) = delta.as_ref() {
             file_oid = delta.old_file().id();
-            file_path = delta.old_file().path().unwrap().to_path_buf();
+            file_path = delta.old_file().path()?.to_path_buf();
         }
 
         delta.map(|delta| {
