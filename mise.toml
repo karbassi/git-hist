@@ -5,10 +5,6 @@ postinstall = "git config core.hooksPath .githooks"
 rust = "latest"
 
 [tasks.fmt]
-description = "Check code formatting"
-run = "cargo fmt --all -- --check"
-
-[tasks."fmt:fix"]
 description = "Fix code formatting"
 run = "cargo fmt --all"
 

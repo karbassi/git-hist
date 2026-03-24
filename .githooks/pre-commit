@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 set -e
-mise run lint
+cargo fmt --all
+git add -u
+cargo clippy -- -D warnings
