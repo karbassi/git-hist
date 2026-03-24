@@ -8,17 +8,12 @@ use std::env;
 use std::path;
 
 pub fn get_repository() -> Result<Repository> {
-    let repo = Repository::discover(env::current_dir()?)
-        .context("Failed to open a git repository for the current directory")?;
-    if repo.is_bare() {
-        return Err(anyhow!("git-hist does not support a bare repository"));
-    }
-    Ok(repo)
+    get_repository_at(&env::current_dir()?)
 }
 
 pub fn get_repository_at(path: &path::Path) -> Result<Repository> {
-    let repo =
-        Repository::discover(path).context("Failed to open a git repository for the given path")?;
+    let repo = Repository::discover(path)
+        .with_context(|| format!("Failed to open a git repository at '{}'", path.display()))?;
     if repo.is_bare() {
         return Err(anyhow!("git-hist does not support a bare repository"));
     }
@@ -39,10 +34,20 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     args: &'a Args,
     workdir: &path::Path,
 ) -> Result<History<'a>> {
+    let repo_root = repo
+        .path()
+        .parent()
+        .context("Failed to determine repository root")?;
     let file_path_from_repository = workdir
         .join(&file_path)
-        .strip_prefix(repo.path().parent().unwrap())
-        .unwrap()
+        .strip_prefix(repo_root)
+        .with_context(|| {
+            format!(
+                "File path '{}' is not inside the git repository at '{}'",
+                file_path.as_ref().to_string_lossy(),
+                repo_root.display()
+            )
+        })?
         .to_path_buf();
 
     let mut revwalk = repo
@@ -52,7 +57,7 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     revwalk.simplify_first_parent()?;
 
     let commits = revwalk
-        .map(|oid| oid.and_then(|oid| repo.find_commit(oid)).unwrap())
+        .filter_map(|oid| oid.and_then(|oid| repo.find_commit(oid)).ok())
         .collect::<Vec<_>>();
     let head_tree = commits
         .first()
