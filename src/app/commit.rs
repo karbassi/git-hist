@@ -98,12 +98,7 @@ impl<'a> Commit<'a> {
             .references()
             .unwrap()
             .filter_map(|r| r.ok())
-            .filter(|r| {
-                r.target()
-                    // use https://doc.rust-lang.org/std/option/enum.Option.html#method.contains in the future
-                    .filter(|oid| *oid == self.oid)
-                    .is_some()
-            });
+            .filter(|r| r.target() == Some(self.oid));
         let references = references.filter(|r| r.is_branch() || r.is_remote() || r.is_tag());
         let reference_groups: HashMap<ReferenceType, Vec<_>> =
             references.into_group_map_by(|r| match r {

@@ -4,7 +4,7 @@ use git2::{Delta, DiffDelta, Oid, Repository};
 use once_cell::sync::OnceCell;
 use ratatui::style::{Color, Style};
 use similar::{ChangeTag, TextDiff};
-use std::{cmp, ops::Deref};
+use std::cmp;
 
 pub struct Diff<'a> {
     status: Delta,
@@ -207,12 +207,7 @@ impl<'a> Diff<'a> {
         self.lines().and_then(|lines| {
             lines
                 .iter()
-                .find(|line| {
-                    line.old_index
-                        // use https://doc.rust-lang.org/std/option/enum.Option.html#method.contains in the future
-                        .filter(|i| *i == old_index)
-                        .is_some()
-                })
+                .find(|line| line.old_index == Some(old_index))
                 .map(|line| line.index)
         })
     }
@@ -221,12 +216,7 @@ impl<'a> Diff<'a> {
         self.lines().and_then(|lines| {
             lines
                 .iter()
-                .find(|line| {
-                    line.new_index
-                        // use https://doc.rust-lang.org/std/option/enum.Option.html#method.contains in the future
-                        .filter(|i| *i == new_index)
-                        .is_some()
-                })
+                .find(|line| line.new_index == Some(new_index))
                 .map(|line| line.index)
         })
     }
@@ -265,11 +255,11 @@ impl DiffLine {
         self.new_index.map(|index| index + 1)
     }
 
-    pub fn sign(&self) -> String {
+    pub fn sign(&self) -> &'static str {
         match self.tag {
-            ChangeTag::Delete => String::from("-"),
-            ChangeTag::Insert => String::from("+"),
-            ChangeTag::Equal => String::from(" "),
+            ChangeTag::Delete => "-",
+            ChangeTag::Insert => "+",
+            ChangeTag::Equal => " ",
         }
     }
 
@@ -281,7 +271,7 @@ impl DiffLine {
         }
     }
 
-    pub fn parts(&self) -> &Vec<DiffLinePart> {
+    pub fn parts(&self) -> &[DiffLinePart] {
         &self.parts
     }
 }
@@ -301,7 +291,7 @@ impl DiffLinePart {
     }
 
     pub fn text(&self) -> &str {
-        self.text.deref()
+        &self.text
     }
 
     pub fn emphasize(&self, style: Style) -> Style {
