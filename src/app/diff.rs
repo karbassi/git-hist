@@ -146,7 +146,7 @@ impl<'a> Diff<'a> {
         }
     }
 
-    pub fn can_move_up(&self, index: usize, state: &State) -> bool {
+    pub fn can_move_up(&self, index: usize) -> bool {
         index > self.allowed_min_index()
     }
 

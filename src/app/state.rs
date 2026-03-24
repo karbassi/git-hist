@@ -56,7 +56,7 @@ impl<'a> State<'a> {
     }
 
     pub fn can_move_up(&self) -> bool {
-        self.point.diff().can_move_up(self.line_index, self)
+        self.point.diff().can_move_up(self.line_index)
     }
 
     pub fn can_move_down(&self) -> bool {
