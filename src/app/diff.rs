@@ -162,7 +162,7 @@ impl<'a> Diff<'a> {
                 .find(|line| line.old_index.is_some())
             {
                 debug_assert!(line.index >= index);
-                IndexPair::new(line.index - index, line.old_index.unwrap())
+                IndexPair::new(line.index.saturating_sub(index), line.old_index.unwrap())
             } else if let Some(line) = lines
                 .iter()
                 .take(index)
@@ -170,7 +170,7 @@ impl<'a> Diff<'a> {
                 .find(|line| line.old_index.is_some())
             {
                 debug_assert!(line.index < index);
-                IndexPair::new(index - line.index, line.old_index.unwrap())
+                IndexPair::new(index.saturating_sub(line.index), line.old_index.unwrap())
             } else {
                 IndexPair::new(0, 0)
             }
@@ -187,7 +187,7 @@ impl<'a> Diff<'a> {
                 .find(|line| line.new_index.is_some())
             {
                 debug_assert!(line.index >= index);
-                IndexPair::new(line.index - index, line.new_index.unwrap())
+                IndexPair::new(line.index.saturating_sub(index), line.new_index.unwrap())
             } else if let Some(line) = lines
                 .iter()
                 .take(index)
@@ -195,7 +195,7 @@ impl<'a> Diff<'a> {
                 .find(|line| line.new_index.is_some())
             {
                 debug_assert!(line.index < index);
-                IndexPair::new(index - line.index, line.new_index.unwrap())
+                IndexPair::new(index.saturating_sub(line.index), line.new_index.unwrap())
             } else {
                 IndexPair::new(0, 0)
             }
