@@ -54,24 +54,54 @@ pub fn get_history_with_workdir<'a, P: AsRef<path::Path>>(
     let commits = revwalk
         .map(|oid| oid.and_then(|oid| repo.find_commit(oid)).unwrap())
         .collect::<Vec<_>>();
-    let latest_file_oid = commits
+    let head_tree = commits
         .first()
         .context("Failed to get any commit")?
         .tree()
-        .unwrap()
+        .unwrap();
+    let latest_file_oid = head_tree
         .get_path(&file_path_from_repository)
-        .with_context(|| {
-            format!(
-                "Failed to find the file '{}' on HEAD",
+        .or_else(|_| {
+            // Check if the path goes through a submodule (commit entry in tree)
+            let mut prefix = path::PathBuf::new();
+            for component in file_path_from_repository.components() {
+                prefix.push(component);
+                if let Ok(entry) = head_tree.get_path(&prefix) {
+                    if entry.kind() == Some(ObjectType::Commit) {
+                        let remaining = file_path_from_repository
+                            .strip_prefix(&prefix)
+                            .unwrap();
+                        return Err(anyhow!(
+                            "The path '{}' is inside the submodule '{}'. \
+                             Run git-hist from within the submodule instead:\n  \
+                             cd {} && git hist {}",
+                            file_path.as_ref().to_string_lossy(),
+                            prefix.display(),
+                            prefix.display(),
+                            remaining.display()
+                        ));
+                    }
+                }
+            }
+            Err(anyhow!(
+                "File '{}' not found on HEAD. Check the path and try again",
                 file_path.as_ref().to_string_lossy()
-            )
+            ))
         })
         .and_then(|entry| {
             if let Some(ObjectType::Blob) = entry.kind() {
                 Ok(entry)
+            } else if entry.kind() == Some(ObjectType::Commit) {
+                Err(anyhow!(
+                    "The path '{}' is a submodule, not a file. \
+                     Run git-hist from within the submodule instead:\n  \
+                     cd {}",
+                    file_path.as_ref().to_string_lossy(),
+                    file_path.as_ref().to_string_lossy()
+                ))
             } else {
                 Err(anyhow!(
-                    "Failed to find the path '{}' as a blob on HEAD",
+                    "'{}' is a directory, not a file. Provide a path to a file instead",
                     file_path.as_ref().to_string_lossy()
                 ))
             }

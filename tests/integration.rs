@@ -406,7 +406,7 @@ fn test_get_history_nonexistent_file() {
         Ok(_) => unreachable!(),
     };
     assert!(
-        err_msg.contains("Failed to find the file"),
+        err_msg.contains("not found on HEAD"),
         "Error should mention file not found, got: {}",
         err_msg
     );
@@ -418,6 +418,12 @@ fn test_get_history_directory_path_fails() {
     let args = default_args("src");
     let result = git::get_history_with_workdir("src", &repo, &args, Path::new(GIT_HIST_REPO));
     assert!(result.is_err());
+    let err_msg = format!("{:#}", result.err().unwrap());
+    assert!(
+        err_msg.contains("is a directory"),
+        "Error should mention it's a directory, got: {}",
+        err_msg
+    );
 }
 
 // ============================================================
@@ -462,6 +468,28 @@ fn test_submodule_path_is_not_a_blob() {
     let args = default_args("org");
     let result = git::get_history_with_workdir("org", &repo, &args, repo_path);
     assert!(result.is_err(), "Submodule path should not be a blob");
+    let err_msg = format!("{:#}", result.err().unwrap());
+    assert!(
+        err_msg.contains("submodule"),
+        "Error should mention submodule, got: {}",
+        err_msg
+    );
+}
+
+#[test]
+fn test_file_inside_submodule_error_mentions_submodule() {
+    require_assistant_repo!();
+    let repo_path = assistant_repo_path();
+    let repo = Repository::open(repo_path).unwrap();
+    let args = default_args("org/DIGEST.md");
+    let result = git::get_history_with_workdir("org/DIGEST.md", &repo, &args, repo_path);
+    assert!(result.is_err(), "File inside submodule should fail");
+    let err_msg = format!("{:#}", result.err().unwrap());
+    assert!(
+        err_msg.contains("submodule"),
+        "Error should mention submodule, got: {}",
+        err_msg
+    );
 }
 
 // ============================================================
