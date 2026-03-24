@@ -36,7 +36,7 @@ pub struct Args {
 
     /// Set the number of spaces for a tab character (\t)
     #[arg(long = "tab-size", value_name = "size", default_value = "4")]
-    tab_size: usize,
+    pub tab_size: usize,
 
     #[arg(skip = String::from("    "))]
     pub tab_spaces: String,

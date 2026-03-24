@@ -35,6 +35,7 @@ fn default_args(file_path: &str) -> Args {
         user_for_name: UserType::Author,
         user_for_date: UserType::Author,
         date_format: String::from("[%Y-%m-%d]"),
+        tab_size: 4,
         tab_spaces: String::from("    "),
     }
 }
