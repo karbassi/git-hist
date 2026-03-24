@@ -1,4 +1,3 @@
-use crate::app::dashboard::Dashboard;
 use crate::app::state::State;
 use crate::args::Args;
 use git2::{Delta, DiffDelta, Oid, Repository};
@@ -134,7 +133,7 @@ impl<'a> Diff<'a> {
     pub fn allowed_max_index(&self, state: &State) -> usize {
         if let Some(lines) = self.lines() {
             let diff_length = lines.len();
-            let diff_height = Dashboard::diff_height(state.terminal_height());
+            let diff_height = state.diff_height();
 
             if state.args().beyond_last_line {
                 diff_length.saturating_sub(1)

@@ -117,10 +117,6 @@ impl<'a> Dashboard<'a> {
         Ok(())
     }
 
-    pub fn diff_height(terminal_height: usize) -> usize {
-        terminal_height.saturating_sub(usize::from(COMMIT_INFO_OUTER_HEIGHT))
-    }
-
     fn get_left_navi_paragraph(state: &'a State) -> widgets::Paragraph<'a> {
         let backward_symbol = if state.point().is_earliest() {
             ""
@@ -276,7 +272,7 @@ impl<'a> Dashboard<'a> {
             // for a binary file
             let mut alert_text = vec![];
 
-            let diff_height = Self::diff_height(state.terminal_height());
+            let diff_height = state.diff_height();
             let offset = diff_height.saturating_sub(BINARY_ALERT_TEXT.len()) / 2;
             alert_text.append(&mut vec![text::Line::from(vec![]); offset]);
             alert_text.append(&mut BINARY_ALERT_TEXT.clone());
